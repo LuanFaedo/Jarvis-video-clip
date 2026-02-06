@@ -473,10 +473,11 @@ def toggle_mute(user_id: str) -> bool:
     return bool(novo_estado)
 
 def limpar_historico_conversa(user_id: str):
-    """Limpa apenas o histórico de conversa (mensagens + resumo). Não toca em fatos, financeiro, metas, etc."""
+    """Limpa histórico de conversa (mensagens + fatos + resumo). Preserva financeiro, metas e assinaturas."""
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("DELETE FROM mensagens WHERE user_id = ?", (user_id,))
+    cursor.execute("DELETE FROM fatos WHERE user_id = ?", (user_id,))
     cursor.execute(
         "UPDATE usuarios SET resumo_conversa = 'Histórico limpo pelo usuário.', atualizado_em = ? WHERE user_id = ?",
         (datetime.now(), user_id)
