@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Teste de Conexão Jarvis V63</title>
+    <style>
+        body { font-family: sans-serif; background: #1a1a1a; color: #0f0; padding: 20px; }
+        .box { border: 1px solid #444; padding: 15px; margin: 10px 0; background: #222; }
+        button { background: #0066cc; color: white; border: none; padding: 10px 20px; cursor: pointer; font-size: 16px; }
+        button:hover { background: #004499; }
+        #log { white-space: pre-wrap; font-family: monospace; color: #ccc; }
+        .status-ok { color: #0f0; font-weight: bold; }
+        .status-err { color: #f00; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>🛰️ Jarvis V63 - Painel de Diagnóstico</h1>
+    
+    <div class="box">
+        <h3>1. Teste de Conexão Básica (Ping)</h3>
+        <button onclick="testPing()">Ping Servidor (127.0.0.1:5000)</button>
+        <div id="res-ping"></div>
+    </div>
+
+    <div class="box">
+        <h3>2. Teste da API WhatsApp (Simulação)</h3>
+        <textarea id="msg-input" style="width: 100%; height: 60px; background:#333; color:#fff;" placeholder="Digite uma mensagem para o Jarvis..."></textarea>
+        <br><br>
+        <button onclick="testWhatsapp()">Enviar Mensagem</button>
+        <div id="res-wa"></div>
+    </div>
+
+    <div class="box">
+        <h3>LOG DO SISTEMA</h3>
+        <div id="log"></div>
+    </div>
+
+    <script>
+        function log(msg) {
+            const el = document.getElementById('log');
+            el.innerHTML += `[${new Date().toLocaleTimeString()}] ${msg}\n`;
+            console.log(msg);
+        }
+
+        async function testPing() {
+            log("Iniciando Ping...");
+            try {
+                const start = Date.now();
+                const res = await fetch('http://127.0.0.1:5000/');
+                const duration = Date.now() - start;
+                
+                if (res.ok) {
+                    document.getElementById('res-ping').innerHTML = `<span class="status-ok">ONLINE (${duration}ms)</span>`;
+                    log(`Sucesso! Status: ${res.status}`);
+                } else {
+                    throw new Error(`Status ${res.status}`);
+                }
+            } catch (e) {
+                document.getElementById('res-ping').innerHTML = `<span class="status-err">OFFLINE: ${e.message}</span>`;
+                log(`Erro no Ping: ${e.message}`);
+            }
+        }
+
+        async function testWhatsapp() {
+            const text = document.getElementById('msg-input').value || "Olá Jarvis, status?";
+            log(`Enviando mensagem: "${text}"...`);
+            
+            try {
+                const res = await fetch('http://127.0.0.1:5000/api/whatsapp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        sender: 'Tester_HTML',
+                        text: text,
+                        chat_id: 'html_test_123'
+                    })
+                });
+                
+                const data = await res.json();
+                document.getElementById('res-wa').innerHTML = `<b>Resposta:</b> ${data.response}`;
+                log(`Resposta recebida: ${data.response.substring(0, 50)}...`);
+                
+                if (data.audio_response) {
+                    log("Áudio recebido! (Base64 oculto)");
+                }
+
+            } catch (e) {
+                document.getElementById('res-wa').innerHTML = `<span class="status-err">ERRO: ${e.message}</span>`;
+                log(`Falha na API: ${e.message}`);
+            }
+        }
+    </script>
+</body>
+</html>

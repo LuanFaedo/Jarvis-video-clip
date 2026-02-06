@@ -1,0 +1,57 @@
+# Node
+node_modules/
+npm-debug.log
+
+# Python
+__pycache__/
+*.py[cod]
+venv/
+.env
+
+# Build Artifacts
+*.exe
+!tools/**/*.exe
+build/
+dist/
+*.spec
+
+# WhatsApp Session (Segurança e Cache)
+.wwebjs_auth/
+.wwebjs_cache/
+
+# Jarvis Data
+audios/
+memoria/*.json
+!memoria/config_jarvis.json
+!memoria/users.json
+
+# Logs & Temp
+*.log
+_lixo/
+logs/
+log_erro_sistema.txt
+docs/LINK_JARVIS.txt
+
+# System
+.DS_Store
+Thumbs.db
+JARVIS.exe
+
+# Large Data & Cache
+producao/
+videoclipes/
+temp_clips/
+temp_cache/
+brave_profile_jarvis/
+brave_profile_jarvis_old/
+chrome_profile_jarvis/
+tools/vosk-model-small-pt-0.3/
+audios/
+_backups/
+historico/
+static/*.pdf
+*.mp3
+*.mp4
+*.png
+*.jpg
+!connect_qr.png
