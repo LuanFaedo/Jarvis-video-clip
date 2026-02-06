@@ -1178,7 +1178,7 @@ def api_whatsapp():
 
         if texto_cmd == '/versao' or texto_cmd == '/versão':
             print(f"[WHATSAPP API] /versao → {JARVIS_VERSION}", flush=True)
-            return jsonify({"response": f"🤖 Jarvis {versao_superscript(JARVIS_VERSION)}", "chat_id": chat_id})
+            return jsonify({"response": f"🤖 *Jarvis {JARVIS_VERSION}*", "chat_id": chat_id})
 
         with lock_chats:
             if chat_id not in chats_ativos: chats_ativos[chat_id] = {"processando": True, "fila": [], "resultados": []}
