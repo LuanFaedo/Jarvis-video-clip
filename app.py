@@ -132,7 +132,8 @@ try:
         get_saldo, atualizar_saldo, adicionar_transacao, get_transacoes,
         limpar_memoria_usuario, salvar_diario_voz,
         definir_meta, get_metas, criar_objetivo, atualizar_objetivo, get_objetivos,
-        adicionar_assinatura, get_assinaturas, remover_assinatura
+        adicionar_assinatura, get_assinaturas, remover_assinatura,
+        get_mute_status, toggle_mute, limpar_historico_conversa
     )
     print("[SISTEMA] Memória SQLite carregada com sucesso.")
 except ImportError as e:
@@ -1151,6 +1152,19 @@ def api_whatsapp():
         
         print(f"[WHATSAPP API] Sender: {sender} | ChatID: {chat_id}", flush=True)
 
+        # --- COMANDOS RÁPIDOS (interceptados antes de qualquer processamento) ---
+        texto_cmd = texto.strip().lower()
+        if texto_cmd == '/mute':
+            novo_estado = toggle_mute(sender)
+            msg = "🔇 Áudio desativado. Vou responder apenas por texto." if novo_estado else "🔊 Áudio reativado. Voltei a enviar mensagens de voz."
+            print(f"[WHATSAPP API] /mute toggle → {'MUTADO' if novo_estado else 'ATIVO'} para {sender}", flush=True)
+            return jsonify({"response": msg, "chat_id": chat_id})
+
+        if texto_cmd == '/clear':
+            limpar_historico_conversa(sender)
+            print(f"[WHATSAPP API] /clear → Histórico limpo para {sender}", flush=True)
+            return jsonify({"response": "🧹 Histórico de conversa limpo com sucesso.", "chat_id": chat_id})
+
         with lock_chats:
             if chat_id not in chats_ativos: chats_ativos[chat_id] = {"processando": True, "fila": [], "resultados": []}
             else: chats_ativos[chat_id]["processando"] = True
@@ -1271,7 +1285,10 @@ def api_whatsapp():
 
         print(f"[WHATSAPP API] Resposta: {len(res_txt)} chars.", flush=True)
         
-        audios = gerar_multiplos_audios(res_txt)
+        if get_mute_status(sender):
+            audios = []
+        else:
+            audios = gerar_multiplos_audios(res_txt)
 
         with lock_chats:
             if chat_id in chats_ativos:

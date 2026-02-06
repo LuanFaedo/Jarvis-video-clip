@@ -2,7 +2,10 @@
   "permissions": {
     "allow": [
       "Bash(dir:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(sqlite3:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nAdd /mute and /clear WhatsApp commands with per-contact preferences\n\n- /mute toggles audio on/off per contact \\(stored in SQLite preferencias_contato table\\)\n- /clear wipes conversation history only \\(preserves facts, finances, goals\\)\n- Commands intercepted early in /api/whatsapp before any audio/LLM processing\n\nCo-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>\nEOF\n\\)\")"
     ]
   }
 }

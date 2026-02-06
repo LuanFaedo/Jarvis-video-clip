@@ -150,6 +150,15 @@ def init_database():
         )
     """)
 
+    # Tabela de preferências por contato (mute, etc.)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS preferencias_contato (
+            user_id TEXT PRIMARY KEY,
+            mute_audio BOOLEAN DEFAULT 0,
+            atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
     conn.commit()
     conn.close()
     print("[DB] Banco de dados inicializado")
@@ -425,6 +434,53 @@ def remover_assinatura(user_id: str, nome: str):
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("UPDATE assinaturas SET ativo = 0 WHERE user_id = ? AND nome LIKE ?", (user_id, f"%{nome}%"))
+    conn.commit()
+    conn.close()
+
+# ===================== PREFERÊNCIAS POR CONTATO =====================
+
+def get_mute_status(user_id: str) -> bool:
+    """Retorna True se o contato está com áudio mutado"""
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT mute_audio FROM preferencias_contato WHERE user_id = ?", (user_id,))
+    row = cursor.fetchone()
+    conn.close()
+    return bool(row["mute_audio"]) if row else False
+
+def toggle_mute(user_id: str) -> bool:
+    """Alterna mute on/off para o contato. Retorna o novo estado (True=mutado)"""
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT mute_audio FROM preferencias_contato WHERE user_id = ?", (user_id,))
+    row = cursor.fetchone()
+
+    if row:
+        novo_estado = 0 if row["mute_audio"] else 1
+        cursor.execute(
+            "UPDATE preferencias_contato SET mute_audio = ?, atualizado_em = ? WHERE user_id = ?",
+            (novo_estado, datetime.now(), user_id)
+        )
+    else:
+        novo_estado = 1
+        cursor.execute(
+            "INSERT INTO preferencias_contato (user_id, mute_audio, atualizado_em) VALUES (?, ?, ?)",
+            (user_id, novo_estado, datetime.now())
+        )
+
+    conn.commit()
+    conn.close()
+    return bool(novo_estado)
+
+def limpar_historico_conversa(user_id: str):
+    """Limpa apenas o histórico de conversa (mensagens + resumo). Não toca em fatos, financeiro, metas, etc."""
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM mensagens WHERE user_id = ?", (user_id,))
+    cursor.execute(
+        "UPDATE usuarios SET resumo_conversa = 'Histórico limpo pelo usuário.', atualizado_em = ? WHERE user_id = ?",
+        (datetime.now(), user_id)
+    )
     conn.commit()
     conn.close()
 
