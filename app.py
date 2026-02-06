@@ -163,38 +163,6 @@ from music_video_handler import _thread_processar_video
 
 manipulador = ManipuladorTotal(BASE_DIR)
 
-# --- THREAD /VIDEO COMMAND (V201) ---
-def _thread_video_comando(sender, chat_id, prompt):
-    """Thread background para o comando /video. Gera 3 clips de 5s via Meta AI com daisy chain."""
-    try:
-        from video_engine import JarvisVideoMaker
-        print(f"[/VIDEO THREAD] Iniciando para {sender}: {prompt}", flush=True)
-
-        maker = JarvisVideoMaker()
-        video_path = maker.gerar_video_comando(prompt, num_clips=3)
-
-        push_data = {}
-        if video_path and os.path.exists(video_path):
-            push_data = {
-                "target": sender,
-                "path": os.path.abspath(video_path),
-                "caption": f"🎬 /video: {prompt}"
-            }
-            print(f"[/VIDEO THREAD] ✅ Vídeo pronto: {video_path}", flush=True)
-        else:
-            push_data = {
-                "target": sender,
-                "path": "",
-                "caption": "❌ Não consegui gerar o vídeo. Tente novamente."
-            }
-            print(f"[/VIDEO THREAD] ❌ Falha na geração.", flush=True)
-
-        with open("video_push.json", "w", encoding="utf-8") as f:
-            json.dump(push_data, f, ensure_ascii=False)
-
-    except Exception as e:
-        print(f"[/VIDEO THREAD] ERRO: {e}", flush=True)
-
 # API
 API_BASE_URL = os.getenv("API_BASE_URL", "http://127.0.0.1:11434/v1")
 API_KEY = "AAAAC3NzaC1lZDI1NTE5AAAAIJ9KfyhZeNo5E84kORaqKYu7gxopcvqT2hRabwJU/sXF"
@@ -1211,14 +1179,6 @@ def api_whatsapp():
         if texto_cmd == '/versao' or texto_cmd == '/versão':
             print(f"[WHATSAPP API] /versao → {JARVIS_VERSION}", flush=True)
             return jsonify({"response": f"🤖 *Jarvis {JARVIS_VERSION}*", "chat_id": chat_id})
-
-        if texto_cmd.startswith('/video '):
-            prompt_video = texto.strip()[7:].strip()
-            if not prompt_video:
-                return jsonify({"response": "❓ Use: /video <descrição do vídeo>", "chat_id": chat_id})
-            print(f"[WHATSAPP API] /video → '{prompt_video}' para {sender}", flush=True)
-            threading.Thread(target=_thread_video_comando, args=(sender, chat_id, prompt_video)).start()
-            return jsonify({"response": f"🎬 Gerando vídeo de 15s: *{prompt_video}*\nVocê receberá quando ficar pronto.", "chat_id": chat_id})
 
         with lock_chats:
             if chat_id not in chats_ativos: chats_ativos[chat_id] = {"processando": True, "fila": [], "resultados": []}
