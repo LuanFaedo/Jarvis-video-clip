@@ -1176,6 +1176,10 @@ def api_whatsapp():
             print(f"[WHATSAPP API] /clear → Histórico limpo para {sender}", flush=True)
             return jsonify({"response": "🧹 Histórico de conversa limpo com sucesso.", "chat_id": chat_id})
 
+        if texto_cmd == '/versao' or texto_cmd == '/versão':
+            print(f"[WHATSAPP API] /versao → {JARVIS_VERSION}", flush=True)
+            return jsonify({"response": f"🤖 Jarvis {versao_superscript(JARVIS_VERSION)}", "chat_id": chat_id})
+
         with lock_chats:
             if chat_id not in chats_ativos: chats_ativos[chat_id] = {"processando": True, "fila": [], "resultados": []}
             else: chats_ativos[chat_id]["processando"] = True
@@ -1293,8 +1297,6 @@ def api_whatsapp():
             pdf_anexo = None
 
         if not res_txt or not res_txt.strip(): res_txt = "..."
-
-        res_txt = f"{versao_superscript(JARVIS_VERSION)}\n{res_txt}"
 
         print(f"[WHATSAPP API] Resposta: {len(res_txt)} chars.", flush=True)
         
