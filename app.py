@@ -93,6 +93,17 @@ def limpar_processos_orfãos():
 
 limpar_processos_orfãos()
 
+JARVIS_VERSION = "V201"
+
+def versao_superscript(versao: str) -> str:
+    """Converte versão para caracteres Unicode superscript (ex: V201 → ᵛ²⁰¹)"""
+    mapa = {
+        'V': 'ᵛ', 'v': 'ᵛ',
+        '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴',
+        '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹'
+    }
+    return ''.join(mapa.get(c, c) for c in versao)
+
 LAST_USER_INPUT = {"text": "", "time": 0}
 LAST_PROCESSED_TEXT = ""
 LAST_PROCESSED_TIME = 0
@@ -1282,6 +1293,8 @@ def api_whatsapp():
             pdf_anexo = None
 
         if not res_txt or not res_txt.strip(): res_txt = "..."
+
+        res_txt = f"{versao_superscript(JARVIS_VERSION)}\n{res_txt}"
 
         print(f"[WHATSAPP API] Resposta: {len(res_txt)} chars.", flush=True)
         
